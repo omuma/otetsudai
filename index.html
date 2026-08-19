@@ -73,6 +73,27 @@
     color:var(--ink-soft);
     letter-spacing:0.12em;
   }
+  header .holder-name{
+    margin-top:14px;
+    display:inline-flex;
+    align-items:baseline;
+    gap:8px;
+    padding:6px 18px;
+    border-top:1px solid var(--paper-line);
+    border-bottom:1px solid var(--paper-line);
+  }
+  header .holder-name .hn-label{
+    font-size:11px;
+    color:var(--ink-soft);
+    letter-spacing:0.1em;
+  }
+  header .holder-name .hn-value{
+    font-family:'Shippori Mincho', serif;
+    font-size:16px;
+    font-weight:700;
+    color:var(--ink);
+    letter-spacing:0.05em;
+  }
 
   nav.tabs{
     display:flex;
@@ -323,6 +344,21 @@
   .chart-legend .lg-pay{background:linear-gradient(135deg, var(--blue), var(--blue-light));}
 
   /* ---------- Items (chore settings) ---------- */
+  .name-input-row input[type=text]{
+    width:100%;
+    border:1px solid var(--paper-line);
+    background:#FFFDF6;
+    border-radius:8px;
+    padding:11px 12px;
+    font-size:15px;
+    font-family:'Noto Sans JP', sans-serif;
+    color:var(--ink);
+  }
+  .name-input-row input[type=text]:focus{
+    outline:none;
+    border-color:var(--gold);
+  }
+
   .item-row{
     display:flex;
     align-items:center;
@@ -373,6 +409,29 @@
     cursor:pointer;
   }
   .add-item-btn:hover{background:rgba(200,154,46,0.08);}
+
+  .danger-card{border-color:rgba(183,64,31,0.35);}
+  .danger-note{
+    font-size:12px;
+    color:var(--ink-soft);
+    line-height:1.6;
+    margin:0 0 12px;
+  }
+  .danger-btn{
+    width:100%;
+    background:transparent;
+    border:1.5px solid var(--hanko);
+    color:var(--hanko);
+    border-radius:8px;
+    padding:11px;
+    font-family:'Noto Sans JP', sans-serif;
+    font-weight:700;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .danger-btn:hover{background:rgba(183,64,31,0.08);}
+  .modal-btns .danger-confirm{background:var(--hanko); color:#FBF3E6;}
+  .modal-btns .danger-confirm:hover{background:var(--hanko-dark);}
 
   /* ---------- History ---------- */
   .hist-item{
@@ -570,6 +629,10 @@
 <header>
   <div class="cover-title">おてつだい通帳</div>
   <div class="sub">OTETSUDAI PASSBOOK</div>
+  <div class="holder-name" id="holderNameRow" style="display:none;">
+    <span class="hn-label">名前</span>
+    <span class="hn-value" id="holderNameValue"></span>
+  </div>
 </header>
 
 <nav class="tabs">
@@ -598,6 +661,17 @@
     <div class="modal-btns">
       <button class="cancel" id="settleCancel">やめる</button>
       <button class="confirm" id="settleConfirm">せいさんする</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="resetModalBg">
+  <div class="modal">
+    <h3>本当に削除しますか？</h3>
+    <p>きろく（未精算のおてつだい記録）と、せいさん履歴のすべてを削除します。おてつだいこうもく（項目や金額の設定）は残ります。この操作はもとに戻せません。</p>
+    <div class="modal-btns">
+      <button class="cancel" id="resetCancel">やめる</button>
+      <button class="confirm danger-confirm" id="resetConfirm">削除する</button>
     </div>
   </div>
 </div>
@@ -685,6 +759,7 @@
   let chores = [];      // {id, name, price}
   let entries = [];      // {id, choreId, choreName, price, date} unsettled
   let settlements = [];  // {id, date, total, entries:[{choreName, price, date}]}
+  let childName = '';
 
   // Safety net: keep unexpected async errors from surfacing as a scary
   // full-screen error overlay — log quietly instead so the app stays usable.
@@ -723,9 +798,21 @@
     chores = await loadData('chores', DEFAULT_CHORES);
     entries = await loadData('entries', []);
     settlements = await loadData('settlements', []);
+    childName = await loadData('childName', '');
     document.getElementById('loading').remove();
     buildAllPanels();
     switchTab('record');
+  }
+
+  function renderHolderName(){
+    const row = document.getElementById('holderNameRow');
+    const val = document.getElementById('holderNameValue');
+    if(childName){
+      val.textContent = childName;
+      row.style.display = 'inline-flex';
+    } else {
+      row.style.display = 'none';
+    }
   }
 
   // ---------------- Tabs ----------------
@@ -777,9 +864,20 @@
 
       <div class="panel" id="panel-items">
         <div class="card">
+          <h2>お子さんの名前</h2>
+          <div class="name-input-row">
+            <input type="text" id="childNameInput" placeholder="例：太郎" maxlength="20">
+          </div>
+        </div>
+        <div class="card">
           <h2>おてつだいこうもく</h2>
           <div id="itemsList"></div>
           <button class="add-item-btn" id="addItemBtn">＋ こうもくをついか</button>
+        </div>
+        <div class="card danger-card">
+          <h2>データの管理</h2>
+          <p class="danger-note">きろくとせいさん履歴をすべて削除します。おてつだいこうもく（項目と金額の設定）は消えません。この操作はもとに戻せません。</p>
+          <button class="danger-btn" id="resetDataBtn">きろく・せいさん履歴をすべて削除</button>
         </div>
       </div>
 
@@ -794,6 +892,18 @@
     document.getElementById('entryDate').max = todayStr();
     document.getElementById('addItemBtn').addEventListener('click', addNewItemRow);
     document.getElementById('settleBtn').addEventListener('click', openSettleModal);
+    document.getElementById('resetDataBtn').addEventListener('click', ()=>{
+      document.getElementById('resetModalBg').classList.add('open');
+    });
+
+    const nameInput = document.getElementById('childNameInput');
+    nameInput.value = childName;
+    nameInput.addEventListener('change', async ()=>{
+      childName = nameInput.value.trim();
+      await saveData('childName', childName);
+      renderHolderName();
+    });
+    renderHolderName();
 
     renderChoreGrid();
     renderLedger();
@@ -1101,6 +1211,23 @@
     showToast(remain > 0
       ? `¥${paid.toLocaleString('ja-JP')} をせいさんしました（のこり¥${remain.toLocaleString('ja-JP')}）`
       : `¥${paid.toLocaleString('ja-JP')} をせいさんしました`);
+  });
+
+  // ---------------- Reset data ----------------
+  document.getElementById('resetCancel').addEventListener('click', ()=>{
+    document.getElementById('resetModalBg').classList.remove('open');
+  });
+  document.getElementById('resetConfirm').addEventListener('click', async ()=>{
+    entries = [];
+    settlements = [];
+    await saveData('entries', entries);
+    await saveData('settlements', settlements);
+    document.getElementById('resetModalBg').classList.remove('open');
+    renderLedger();
+    renderHistory();
+    updateTotalDisplays();
+    drawChart();
+    showToast('きろくとせいさん履歴を削除しました');
   });
 
   // ---------------- Items tab ----------------
