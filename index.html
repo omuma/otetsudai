@@ -636,10 +636,10 @@
 </header>
 
 <nav class="tabs">
-  <button data-tab="record" class="active">きろく</button>
+  <button data-tab="record" class="active">記録</button>
   <button data-tab="graph">グラフ</button>
   <button data-tab="items">こうもく</button>
-  <button data-tab="history">せいさん履歴</button>
+  <button data-tab="history">精算履歴</button>
 </nav>
 
 <main id="main">
@@ -650,8 +650,8 @@
 
 <div class="modal-bg" id="settleModalBg">
   <div class="modal">
-    <h3>せいさんする金額</h3>
-    <p>今たまっている金額は下の通りです。支払う金額を入力してください。全部より少ない金額を入れると、残りは次回にくり越されます。</p>
+    <h3>精算する金額</h3>
+    <p>貯まっている金額は下の通りです。支払う金額を入力してください。全部より少ない金額を入れると、残りは次回にくり越されます。</p>
     <div class="modal-total num" id="settleModalTotal">0</div>
     <div class="settle-input-row">
       <span class="yen-sign">¥</span>
@@ -660,7 +660,7 @@
     <div class="settle-remain" id="settleRemainNote"></div>
     <div class="modal-btns">
       <button class="cancel" id="settleCancel">やめる</button>
-      <button class="confirm" id="settleConfirm">せいさんする</button>
+      <button class="confirm" id="settleConfirm">精算する</button>
     </div>
   </div>
 </div>
@@ -668,7 +668,7 @@
 <div class="modal-bg" id="resetModalBg">
   <div class="modal">
     <h3>本当に削除しますか？</h3>
-    <p>きろく（未精算のおてつだい記録）と、せいさん履歴のすべてを削除します。おてつだいこうもく（項目や金額の設定）は残ります。この操作はもとに戻せません。</p>
+    <p>記録（未精算のお手伝い記録）と、精算履歴のすべてを削除します。お手伝いこうもく（項目や金額の設定）は残ります。この操作はもとに戻せません。</p>
     <div class="modal-btns">
       <button class="cancel" id="resetCancel">やめる</button>
       <button class="confirm danger-confirm" id="resetConfirm">削除する</button>
@@ -832,7 +832,7 @@
     main.innerHTML = `
       <div class="panel active" id="panel-record">
         <div class="card">
-          <h2>おてつだいをえらぶ</h2>
+          <h2>お手伝いを選ぶ</h2>
           <div class="date-row">
             <span>日付</span>
             <input type="date" id="entryDate">
@@ -840,7 +840,7 @@
           <div class="chore-grid" id="choreGrid"></div>
         </div>
         <div class="card">
-          <h2>きろく（未精算）</h2>
+          <h2>記録（未精算）</h2>
           <div class="ledger" id="ledgerList"></div>
         </div>
       </div>
@@ -848,15 +848,15 @@
       <div class="panel" id="panel-graph">
         <div class="total-card">
           <div class="stamp-ring"></div>
-          <div class="label">今たまっている金額</div>
+          <div class="label">貯まっている金額</div>
           <div class="amount num" id="graphTotal">0</div>
-          <button class="settle-btn" id="settleBtn">せいさんする（お支払い）</button>
+          <button class="settle-btn" id="settleBtn">精算する（お支払い）</button>
         </div>
         <div class="card">
-          <h2>日別のきろく</h2>
+          <h2>日別の記録</h2>
           <div class="chart-legend">
-            <span class="lg-item"><span class="lg-dot lg-earn"></span>かせいだ額</span>
-            <span class="lg-item"><span class="lg-dot lg-pay"></span>せいさん（お支払い）額</span>
+            <span class="lg-item"><span class="lg-dot lg-earn"></span>稼いだ額</span>
+            <span class="lg-item"><span class="lg-dot lg-pay"></span>精算（お支払い）額</span>
           </div>
           <canvas id="chart" height="200"></canvas>
         </div>
@@ -864,26 +864,26 @@
 
       <div class="panel" id="panel-items">
         <div class="card">
-          <h2>お子さんの名前</h2>
+          <h2>子供の名前</h2>
           <div class="name-input-row">
             <input type="text" id="childNameInput" placeholder="例：太郎" maxlength="20">
           </div>
         </div>
         <div class="card">
-          <h2>おてつだいこうもく</h2>
+          <h2>お手伝いこうもく</h2>
           <div id="itemsList"></div>
           <button class="add-item-btn" id="addItemBtn">＋ こうもくをついか</button>
         </div>
         <div class="card danger-card">
           <h2>データの管理</h2>
-          <p class="danger-note">きろくとせいさん履歴をすべて削除します。おてつだいこうもく（項目と金額の設定）は消えません。この操作はもとに戻せません。</p>
-          <button class="danger-btn" id="resetDataBtn">きろく・せいさん履歴をすべて削除</button>
+          <p class="danger-note">記録と精算履歴をすべて削除します。お手伝いこうもく（項目と金額の設定）は消えません。この操作はもとに戻せません。</p>
+          <button class="danger-btn" id="resetDataBtn">記録・精算履歴をすべて削除</button>
         </div>
       </div>
 
       <div class="panel" id="panel-history">
         <div class="card">
-          <h2>せいさん履歴</h2>
+          <h2>精算履歴</h2>
           <div id="historyList"></div>
         </div>
       </div>
@@ -945,7 +945,7 @@
   function renderLedger(){
     const ledger = document.getElementById('ledgerList');
     if(entries.length===0){
-      ledger.innerHTML = `<div class="ledger-empty">まだ記録がありません。上のボタンからおてつだいを記録しましょう。</div>`;
+      ledger.innerHTML = `<div class="ledger-empty">まだ記録がありません。上のボタンからお手伝いを記録しましょう。</div>`;
       return;
     }
     const sorted = [...entries].sort((a,b)=> b.date.localeCompare(a.date) || 0);
@@ -1146,10 +1146,10 @@
       message = '金額を入力してください';
     } else if(val <= 0){
       valid = false;
-      message = '0円ではせいさんできません';
+      message = '0円では精算できません';
     } else if(val > total){
       valid = false;
-      message = `たまっている金額（¥${total.toLocaleString('ja-JP')}）より多くはせいさんできません`;
+      message = `たまっている金額（¥${total.toLocaleString('ja-JP')}）より多くは精算できません`;
     }
 
     input.classList.toggle('input-error', !valid);
@@ -1209,8 +1209,8 @@
     updateTotalDisplays();
     drawChart();
     showToast(remain > 0
-      ? `¥${paid.toLocaleString('ja-JP')} をせいさんしました（のこり¥${remain.toLocaleString('ja-JP')}）`
-      : `¥${paid.toLocaleString('ja-JP')} をせいさんしました`);
+      ? `¥${paid.toLocaleString('ja-JP')} を精算しました（のこり¥${remain.toLocaleString('ja-JP')}）`
+      : `¥${paid.toLocaleString('ja-JP')} を精算しました`);
   });
 
   // ---------------- Reset data ----------------
@@ -1227,7 +1227,7 @@
     renderHistory();
     updateTotalDisplays();
     drawChart();
-    showToast('きろくとせいさん履歴を削除しました');
+    showToast('記録と精算履歴を削除しました');
   });
 
   // ---------------- Items tab ----------------
@@ -1239,7 +1239,7 @@
     }
     list.innerHTML = chores.map(c=>`
       <div class="item-row" data-id="${c.id}">
-        <input type="text" class="item-name" value="${escapeAttr(c.name)}" placeholder="おてつだいの名前">
+        <input type="text" class="item-name" value="${escapeAttr(c.name)}" placeholder="お手伝いの名前">
         <span class="yen-sign">¥</span>
         <input type="number" class="item-price" value="${c.price}" min="0" step="10">
         <button class="del-item" title="削除">×</button>
@@ -1269,7 +1269,7 @@
     renderChoreGrid();
   }
   async function addNewItemRow(){
-    const c = {id:uid(), name:'あたらしいおてつだい', price:100};
+    const c = {id:uid(), name:'あたらしいお手伝い', price:100};
     chores.push(c);
     await saveData('chores', chores);
     renderItems();
@@ -1287,7 +1287,7 @@
   function renderHistory(){
     const list = document.getElementById('historyList');
     if(settlements.length===0){
-      list.innerHTML = `<div class="empty-note">せいさん履歴はまだありません。</div>`;
+      list.innerHTML = `<div class="empty-note">精算履歴はまだありません。</div>`;
       return;
     }
     list.innerHTML = settlements.map(s=>`
